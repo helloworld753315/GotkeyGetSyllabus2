@@ -1,0 +1,24 @@
+timetable:
+  import_path: "files/2023_jikanwari_kensaku.xlsx"
+  skip_rows: 12
+  column_names:
+    - "id"
+    - "faculty"
+    - "department"
+    - "day_1"
+    - "time_1"
+    - "semester"
+    - "class"
+    - "course_title"
+    - "instructor"
+    - "room"
+    - "day_2"
+    - "time_2"
+    - "notes"
+  use_cols:
+    - "D"
+    - "E"
+    - "H"
+    - "I"
+    - K
+    - L
