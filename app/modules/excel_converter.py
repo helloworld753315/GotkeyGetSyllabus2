@@ -15,13 +15,13 @@ class TimeTable:
     def str_to_int(c):
         return ord(c) - ord('A')
 
-    def to_json(self):
+    def load(self):
         # エクセルのマクロが原因だろうと思われる警告の無視
         warnings.filterwarnings("ignore", message="Unknown extension is not supported and will be removed")
 
         use_cols = list(map(TimeTable.str_to_int, self.use_cols))
         use_colmn_names = [self.column_names[i] for i in use_cols]
-        df = pd.read_excel(self.import_path, sheet_name=0, skiprows=12, usecols=use_cols)
+        df = pd.read_excel(self.import_path, sheet_name=0, skiprows=self.skip_rows, usecols=use_cols)
         df.columns = use_colmn_names
         print(df)
 

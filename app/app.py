@@ -15,7 +15,7 @@ def main():
         skip_rows=timetable_config["skip_rows"],
         use_cols=timetable_config["use_cols"]
     )
-    timetable.to_json()
+    timetable.load()
 
 
 if __name__ == "__main__":
