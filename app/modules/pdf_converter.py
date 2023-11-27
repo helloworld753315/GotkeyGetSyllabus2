@@ -26,11 +26,19 @@ class Syllabus:
         doc = fitz.open('files/com_humanculture2023.pdf')
         page = doc[0]  # first page
 
-        # rect = fitz.Rect(50, 50, 150, 100)
-        # print(page.get_textbox(rect))
-        words = page.get_text("dict", sort=True)
-        dir = "files/output.json"
+        text_info = page.get_text("dict", sort=True)
+        # テキストブロックと座標情報の取得
+        for block in text_info["blocks"]:
+            if block["type"] == 0:  # テキストブロックを意味する
+                bbox = block["bbox"]  # ブロックの座標情報
+                for line in block["lines"]:
+                    for span in line["spans"]:
+                        text = span["text"]  # テキスト内容
+                        # print(f"Text: {text}, BBox: {bbox}")
+                        if int(bbox[0]) == 31 and int(bbox[1]) == 44:
+                            print(f"Text: 科目名 {text}, BBox: {bbox}")
 
-        with open(dir, mode="w", encoding="utf-8") as f:
-            json.dump(words, f, ensure_ascii=False, indent=2)
-        pprint(words)
+        # dir = "files/output.json"
+        # with open(dir, mode="w", encoding="utf-8") as f:
+        #     json.dump(words, f, ensure_ascii=False, indent=2)
+        # pprint(words)
