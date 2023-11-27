@@ -4,3 +4,10 @@ services:
         context: ./app
         dockerfile: Dockerfile
       container_name: PYTHON
+      # volumes:
+      #   - ./app/files:/files
+      volumes:
+        - ./app:/app
+      tty: true
+      stdin_open: true
+      command: python app.py
