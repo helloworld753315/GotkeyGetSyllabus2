@@ -1,4 +1,3 @@
-import warnings
 import openpyxl as excel
 import json
 
@@ -12,29 +11,35 @@ class TimeTable:
         self.use_cols = use_cols
 
     def str_to_int(c):
+        """Summary line.
+        
+        エクセルの列名を数値に変換する
+        
+        Args:
+            c (str): エクセルの列
+        
+        Returns:
+            int: 数値に変換した値
+        
+        """
+
         return ord(c) - ord('A')
-
-    # def load(self):
-    #     # エクセルのマクロが原因だろうと思われる警告の無視
-    #     warnings.filterwarnings("ignore", message="Unknown extension is not supported and will be removed")
-
-    #     use_cols = list(map(TimeTable.str_to_int, self.use_cols))
-    #     use_colmn_names = [self.column_names[i] for i in use_cols]
-    #     df = pd.read_excel(self.import_path, sheet_name=0, skiprows=self.skip_rows, usecols=use_cols)
-    #     df.columns = use_colmn_names
-    #     return df
     
     def load(self):
+        """Summary line.
+        
+        エクセルの時間割を読み込む。
+        
+        Returns:
+            list: 時間割のオブジェクトが格納されたリスト
+        
+        """
+
         book = excel.load_workbook(self.import_path)
         sheet = book.worksheets[0]
-        use_cols = list(map(TimeTable.str_to_int, self.use_cols))
-        print(use_cols)
-        use_colmn_names = [self.column_names[i] for i in use_cols]
-        print(use_colmn_names)
 
         timetable_list = []
         for row in range(1 + self.skip_rows, sheet.max_row + 1):
-            # row_data = [sheet[f'{col}{row}'].value for col in self.use_cols]
             class_details = {}
             for col in self.use_cols:
                 value_in_cell = sheet[f'{col}{row}'].value
@@ -45,6 +50,11 @@ class TimeTable:
         return timetable_list
 
     def export_json(self):
+        """Summary line.
+        
+        時間割をjsonファイルとして出力する
+        
+        """
         timetable_list = self.load()
         with open(self.export_path, 'w') as json_file:
             json.dump(timetable_list, json_file, indent=4, ensure_ascii=False)
