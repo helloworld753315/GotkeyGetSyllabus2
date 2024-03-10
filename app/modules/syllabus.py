@@ -10,6 +10,20 @@ class Syllabus:
         self.export_path = export_path
         self.text_bbox_setting = text_bbox_setting
 
+    def replace_fullwidth_space(text, replacement):
+        """全角スペースを任意の文字に置き換える。
+
+        Args:
+            text (str): 置き換えを行う文字列。
+            replacement (str): 全角スペースを置き換えるための文字列。
+
+        Returns:
+            str: 全角スペースが置き換えられた文字列。
+        """
+        formatted_text = text.replace("\u3000", replacement)
+    
+        return formatted_text
+
     def import_bbox(self):
         with open(self.text_bbox_setting) as f:
             reader = csv.reader(f)
