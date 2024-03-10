@@ -1,5 +1,6 @@
 pypdf
-PyMuPDF
+pymupdf
 pandas
+numpy
 openpyxl
 pyyaml
