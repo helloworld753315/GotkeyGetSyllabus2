@@ -2,7 +2,6 @@ import fitz
 from pprint import pprint
 import json
 import csv
-import math
 import re
 
 class Syllabus:
@@ -48,24 +47,19 @@ class Syllabus:
             return 0
 
 
-    def test_load(self):
+    def load(self):
         pages = fitz.open(self.import_path)
         number_of_pages = pages.page_count
         # page = pages[22]
         # with open('tmp/com_humanculture2023_23.json', 'w') as json_file:
         #     json.dump(page.get_text("dict")["blocks"], json_file, indent=4, ensure_ascii=False)
-
-        # テキストを抽出したい矩形領域を定義 (x0, y0, x1, y1)
-        count = 0
         text_field_bounds = self.import_bbox()
 
         syllabus_list = []
-        syllabus_info_multi_page = {}
         syllabus_info = {}
         multi_page_count = 0
         for page in pages:
             multi_page_flag = self.check_multipage(page)
-            # syllabus_info = {}
             if not(multi_page_flag == 0):
                 multi_page_count += 1
             for row in text_field_bounds:
@@ -84,27 +78,10 @@ class Syllabus:
                     syllabus_list.append(syllabus_info)
                     syllabus_info = {}
 
-            # if self.check_multipage(page):
-            #     pass
-            # else:
-            #     for row in text_field_bounds:
-            #         rect = fitz.Rect(row['s-x1'], row['s-y1'], row['s-x2'], row['s-y2'])
-            #         # 指定された矩形領域内のテキストを抽出
-            #         text = page.get_textbox(rect)
-            #         syllabus_info.setdefault(row['params'], text)
-
-            #         # if self.check_multipage(page):
-            #         #     lec_count = len(text.split('\n'))
-            #         #     if lec_count == 31: # 16
-            #         #         count += 1
-            #     syllabus_list.append(syllabus_info)
         print(f'ページ数: {number_of_pages}')
         print(f'複数ページにまたがっているシラバス: {multi_page_count}')
         print(f'シラバスの数: {number_of_pages - (int(multi_page_count / 2))}')
         print(f'取得成功したシラバスの数: {len(syllabus_list)}')
 
-        with open('tmp/out/com_humanculture2023_test_0324_2.json', 'w') as json_file:
+        with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
-        
-        # print(f'授業回数の一致: {count}')
-        # print(f'複数ページのパターン数: {multipage_count}')
