@@ -165,4 +165,5 @@ cython_debug/
 # ImportFiles
 app/files/
 
-config.yml
+app/tmp/
+app/config.yml
