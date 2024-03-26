@@ -1,24 +1,25 @@
 timetable:
-  import_path: "files/2023_jikanwari_kensaku.xlsx"
-  skip_rows: 12
+  import_path: "files/2023_kouki_jikanwari_kensaku.xlsx"
+  export_path: "files/2023_kouki_jikanwari_kensaku.json"
+  skip_rows: 2
   column_names:
-    - "id"
-    - "faculty"
-    - "department"
-    - "day_1"
-    - "time_1"
-    - "semester"
-    - "class"
+    - "affiliation"
+    - "course_classification"
+    - "day_of_week"
+    - "period"
     - "course_title"
-    - "instructor"
-    - "room"
-    - "day_2"
-    - "time_2"
-    - "notes"
+    - "teaching_staff"
+    - "classroom"
   use_cols:
+    - "A"
+    - "B"
+    - "C"
     - "D"
     - "E"
-    - "H"
-    - "I"
-    - K
-    - L
+    - "F"
+    - "G"
+
+syllabus:
+  import_path: "files/com_humanculture2023.pdf"
+  export_path: "tmp/out/com_humanculture2023_test_0324_2.json"
+  text_bbox_setting: "bbox_fixed.csv"

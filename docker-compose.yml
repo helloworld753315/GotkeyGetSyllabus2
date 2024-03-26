@@ -10,4 +10,4 @@ services:
         - ./app:/app
       tty: true
       stdin_open: true
-      command: python app.py
+      command: /bin/bash -c "cp -n config.yml.example config.yml && python app.py"
