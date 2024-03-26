@@ -59,7 +59,7 @@ class Syllabus:
         else:
             return 0
 
-    def debug(self, num, export_path='tmp/com_humanculture2023_23.json'):
+    def export_pdf_to_json(self, num, export_path='tmp/com_humanculture2023_23.json'):
         """デバッグ用の関数。指定したページのPDFをdictで取得して全てjsonファイルに出力する。
 
         Args:
@@ -107,7 +107,7 @@ class Syllabus:
 
         return syllabus_list
     
-    def output_json(self):
+    def export(self):
         syllabus_list = self.load()
 
         with open(self.export_path, 'w') as json_file:
