@@ -28,8 +28,21 @@ class Syllabus:
         with open(self.text_bbox_setting) as f:
             reader = reader = csv.DictReader(f, skipinitialspace=True)
             return list(reader)
+    
 
     def check_multipage(self, page, x1=282.7799987792969, y1=815.6806030273438, x2=304.7400207519531, y2=824.6806030273438):
+        """複数ページにまたがっているかどうかを検出する。
+
+        Args:
+            page (any): PyMuPDFのページオブジェクト
+            x1 (float): x1
+            y1 (float): y1
+            x2 (float): x2
+            y2 (float): y2
+
+        Returns:
+            int: 単一ページの場合は0, 複数ページの場合は1か2を返す。
+        """
         rect = fitz.Rect(x1, y1, x2, y2)
         target_text = page.get_textbox(rect).replace('\n', '')
 
