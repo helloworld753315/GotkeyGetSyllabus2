@@ -96,5 +96,10 @@ class Syllabus:
         print(f'シラバスの数: {number_of_pages - (int(multi_page_count / 2))}')
         print(f'取得成功したシラバスの数: {len(syllabus_list)}')
 
+        return syllabus_list
+    
+    def output_json(self):
+        syllabus_list = self.load()
+
         with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
