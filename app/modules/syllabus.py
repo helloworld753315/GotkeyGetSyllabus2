@@ -59,13 +59,22 @@ class Syllabus:
         else:
             return 0
 
+    def debug(self, num, export_path='tmp/com_humanculture2023_23.json'):
+        """デバッグ用の関数。指定したページのPDFをdictで取得して全てjsonファイルに出力する。
+
+        Args:
+            num (int): ページ番号
+            export_path (str): ファイルを出力するパス
+        """
+        pages = fitz.open(self.import_path)
+        page = pages[num]
+        with open(export_path, 'w') as json_file:
+            json.dump(page.get_text("dict")["blocks"], json_file, indent=4, ensure_ascii=False)
 
     def load(self):
         pages = fitz.open(self.import_path)
         number_of_pages = pages.page_count
-        # page = pages[22]
-        # with open('tmp/com_humanculture2023_23.json', 'w') as json_file:
-        #     json.dump(page.get_text("dict")["blocks"], json_file, indent=4, ensure_ascii=False)
+
         text_field_bounds = self.import_bbox()
 
         syllabus_list = []
