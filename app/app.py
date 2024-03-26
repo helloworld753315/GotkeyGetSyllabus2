@@ -28,7 +28,7 @@ def main():
         export_path=syllabus_config["export_path"],
         text_bbox_setting = syllabus_config["text_bbox_setting"]
     )
-    syllabus.test_load()
+    syllabus.export_json()
     end = time.time()
     time_diff = end - start
     print(f'run_time: {time_diff} s')

@@ -107,7 +107,12 @@ class Syllabus:
 
         return syllabus_list
     
-    def export(self):
+    def export_json(self):
+        """Summary line.
+        
+        シラバスをjsonファイルとして出力する
+        
+        """
         syllabus_list = self.load()
 
         with open(self.export_path, 'w') as json_file:
