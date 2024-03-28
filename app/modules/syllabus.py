@@ -172,7 +172,7 @@ class Syllabus:
         Returns:
             str: ／に囲まれた英単語からkeyを返す。マッチしなかった場合空白文字を返す。
         """
-        pattern = re.compile(r'／([A-Za-z\s]+)')
+        pattern = re.compile(r'／([\*A-Za-z\s]*[A-Za-z][\*A-Za-z\s]*)')
         match = pattern.search(key)
         if match:
             # マッチした部分を取得し、改行コードや空白を除去
@@ -182,6 +182,7 @@ class Syllabus:
             return ""
 
     def scraping(self):
+        syllabus_list = []
         url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
         save_path = '.cache/8002_0110320001_ja_JP.html'
         self.download_to_file(url, save_path)
@@ -196,16 +197,42 @@ class Syllabus:
         detailed_information = tables[2] # 詳細情報
         class_schedule_details = tables[3] # 授業計画詳細情報
 
+        # 基本情報の取得
         keys = basic_information.findAll('th', class_='syllabus-prin')
         values = basic_information.findAll('td', class_='syllabus-break-word')
         if len(keys) == len(values):
-            basic_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
+            # basic_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
+            basic_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
         else:
-            basic_information_dict = []
+            basic_information_dict = {}
 
-        print(basic_information_dict)
+        # 担当教員情報の取得
+        keys = instructor_information.findAll('th', class_='syllabus-prin')
+        values = instructor_information.findAll('td', class_='syllabus-top-info')
+        if len(keys) == len(values):
+            # instructor_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
+            instructor_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
+        else:
+            instructor_information_dict = {}
 
         # print(f'集計 key: {len(keys)}, values: {len(values)}')
+
+        # 詳細情報の取得
+        keys = detailed_information.findAll('th', class_='syllabus-prin')
+        index = [0, 1, 3, 4, 5, 7, 8, 9, 10, 11]
+        filtered_keys = [keys[i] for i in index]
+        values = detailed_information.findAll('td', class_='syllabus-break-word')
+        filtered_values = [values[i] for i in index]
+
+        # for k in filtered_keys:
+        #     print(f'keys: {k.text}')
+        if len(filtered_keys) == len(filtered_values):
+            # detailed_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(filtered_keys, filtered_values)]
+            detailed_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(filtered_keys, filtered_values)}
+        else:
+            detailed_information_dict = {}
+
+        # print(f'keys: {len(keys)}, filterd_keys: {len(filtered_keys)}, values: {len(values)}, filterd_values: {len(filtered_values)}')
 
         # 授業計画
         elements_theme = class_schedule_details.select("tr > td:nth-of-type(3)")
@@ -214,13 +241,20 @@ class Syllabus:
         elements_homework = class_schedule_details.select("tr > td:nth-of-type(4)")
         homework = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_homework]
 
+        syllabus_dict = {**basic_information_dict, **instructor_information_dict, **detailed_information_dict}
+        syllabus_dict['theme'] = theme
+        syllabus_dict['homework'] = homework
+
+
+        return syllabus_dict
+
     def export_json(self):
         """Summary line.
         
         シラバスをjsonファイルとして出力する
         
         """
-        syllabus_list = self.import_pdf()
+        syllabus_list = self.scraping()
 
         with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
