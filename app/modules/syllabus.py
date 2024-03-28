@@ -111,12 +111,21 @@ class Syllabus:
         return syllabus_list
 
     def download_to_file(self, url, save_path):
-        res = requests.get(url, stream=True)
-        if res.status_code != 200:
-            raise IOError('Could not download:', url)
-        with open(save_path, 'wb') as fp:
-            res.raw.decode_content = True
-            shutil.copyfileobj(res.raw, fp)
+        file_path_obj = Path(save_path)
+
+        if not file_path_obj.parent.exists():
+            file_path_obj.parent.mkdir(parents=True)
+
+        if not file_path_obj.exists():
+            file_path_obj.touch(exist_ok=True)
+            res = requests.get(url, stream=True)
+            if res.status_code != 200:
+                raise IOError('Could not download:', url)
+            with open(save_path, 'wb') as fp:
+                res.raw.decode_content = True
+                shutil.copyfileobj(res.raw, fp)
+        else:
+            print(f'{save_path} exists.')
 
     def get_page(self, url):
         res = requests.get(url)
