@@ -173,24 +173,27 @@ class Syllabus:
 
         soup = BeautifulSoup(html, 'html.parser')
         tables = soup.find_all('table', class_='syllabus-normal')
-        table = tables[3]
         basic_information = tables[0] # 基本情報
         instructor_information = tables[1] # 担当教員情報
+        detailed_information = tables[2] # 詳細情報
+        class_schedule_details = tables[3] # 授業計画詳細情報
 
-        # keys = table.findAll('th', class_='syllabus-prin')
-        # values = table.findAll('td', class_='syllabus-break-word')
+        keys = basic_information.findAll('th', class_='syllabus-prin')
+        values = basic_information.findAll('td', class_='syllabus-break-word')
+        if len(keys) == len(values):
+            basic_information_dict = [{key.text: value.text} for key, value in zip(keys, values)]
+        else:
+            basic_information_dict = []
 
-        # for (k,v) in zip(keys, values):
-        #     print(f'{k.text}, {v.text}')
+        print(basic_information_dict)
+
         # print(f'集計 key: {len(keys)}, values: {len(values)}')
-        # elements = table.select("table > tbody > tr > td:nth-of-type(3)")
-        # tr = table.findAll('tr')
 
         # 授業計画
-        elements_theme = table.select("tr > td:nth-of-type(3)")
+        elements_theme = class_schedule_details.select("tr > td:nth-of-type(3)")
         theme = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_theme]
         # 時間外学習の内容
-        elements_homework = table.select("tr > td:nth-of-type(4)")
+        elements_homework = class_schedule_details.select("tr > td:nth-of-type(4)")
         homework = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_homework]
 
     def export_json(self):
