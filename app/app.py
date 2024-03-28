@@ -25,6 +25,7 @@ def main():
     start = time.time()
 
     syllabus = Syllabus(
+        url=syllabus_config["url"],
         import_path=syllabus_config["import_path"],
         export_path=syllabus_config["export_path"],
         text_bbox_setting = syllabus_config["text_bbox_setting"]

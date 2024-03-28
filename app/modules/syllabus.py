@@ -5,10 +5,13 @@ import json
 import csv
 import re
 import requests, shutil
+from pathlib import Path
+import urllib.parse
 from bs4 import BeautifulSoup
 
 class Syllabus:
-    def __init__(self, import_path, export_path, text_bbox_setting):
+    def __init__(self, url, import_path, export_path, text_bbox_setting):
+        self.url = url
         self.import_path = import_path
         self.export_path = export_path
         self.text_bbox_setting = text_bbox_setting
@@ -134,24 +137,50 @@ class Syllabus:
         else:
             html = res.content
             return html
+        
+    def get_urls_by_group(self):
+        """科目群のページからシラバスのURLを取得する。
 
-    def scraping(self):
-        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
-        save_path = '.cache/8002_0110320001_ja_JP.html'
+        Returns:
+            list: シラバスのURL一覧
+        """
+        # URLをデコード
+        url = urllib.parse.unquote(self.url)
+
+        split_url = url.split('/')
+        save_path = f".cache/{'/'.join(split_url[-3:])}"
+        parent_path_from_url = f"{'/'.join(split_url[:-1])}"
+
         self.download_to_file(url, save_path)
 
         with open(save_path , encoding='utf-8') as f:
             html = f.read()
-
         soup = BeautifulSoup(html, 'html.parser')
-        tables = soup.find_all('table', class_='syllabus-normal')
-        table = tables[0]
-        keys = table.findAll('th', class_='syllabus-prin')
-        values = table.findAll('td', class_='syllabus-break-word')
+        table = soup.find('table', class_='normal')
+        course_urls = table.find_all('a')
+        href_values = [f"{parent_path_from_url}/{url.get('href')}" for url in course_urls]
+        print(f'取得したURL数: {len(href_values)}')
 
-        for (k,v) in zip(keys, values):
-            print(f'{k.text},  {v.text}')
-        print(f'集計 key: {len(keys)}, values: {len(values)}')
+        return href_values
+
+    def scraping(self):
+        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
+        # save_path = '.cache/8002_0110320001_ja_JP.html'
+        # self.download_to_file(url, save_path)
+
+        # with open(save_path , encoding='utf-8') as f:
+        #     html = f.read()
+
+        # soup = BeautifulSoup(html, 'html.parser')
+        # tables = soup.find_all('table', class_='syllabus-normal')
+        # table = tables[0]
+        # keys = table.findAll('th', class_='syllabus-prin')
+        # values = table.findAll('td', class_='syllabus-break-word')
+
+        # for (k,v) in zip(keys, values):
+        #     print(f'{k.text},  {v.text}')
+        # print(f'集計 key: {len(keys)}, values: {len(values)}')
+        self.get_urls_by_group()
 
 
 
