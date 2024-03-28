@@ -167,3 +167,4 @@ app/files/
 
 app/tmp/
 app/config.yml
+.cache/
