@@ -199,7 +199,7 @@ class Syllabus:
         keys = basic_information.findAll('th', class_='syllabus-prin')
         values = basic_information.findAll('td', class_='syllabus-break-word')
         if len(keys) == len(values):
-            basic_information_dict = [{self.get_data_by_regex_match(key.text): value.text} for key, value in zip(keys, values)]
+            basic_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
         else:
             basic_information_dict = []
 
