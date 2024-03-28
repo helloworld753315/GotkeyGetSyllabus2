@@ -164,25 +164,34 @@ class Syllabus:
         return href_values
 
     def scraping(self):
-        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
-        # save_path = '.cache/8002_0110320001_ja_JP.html'
-        # self.download_to_file(url, save_path)
+        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
+        save_path = '.cache/8002_0110320001_ja_JP.html'
+        self.download_to_file(url, save_path)
 
-        # with open(save_path , encoding='utf-8') as f:
-        #     html = f.read()
+        with open(save_path , encoding='utf-8') as f:
+            html = f.read()
 
-        # soup = BeautifulSoup(html, 'html.parser')
-        # tables = soup.find_all('table', class_='syllabus-normal')
-        # table = tables[0]
+        soup = BeautifulSoup(html, 'html.parser')
+        tables = soup.find_all('table', class_='syllabus-normal')
+        table = tables[3]
+        basic_information = tables[0] # 基本情報
+        instructor_information = tables[1] # 担当教員情報
+
         # keys = table.findAll('th', class_='syllabus-prin')
         # values = table.findAll('td', class_='syllabus-break-word')
 
         # for (k,v) in zip(keys, values):
-        #     print(f'{k.text},  {v.text}')
+        #     print(f'{k.text}, {v.text}')
         # print(f'集計 key: {len(keys)}, values: {len(values)}')
-        self.get_urls_by_group()
+        # elements = table.select("table > tbody > tr > td:nth-of-type(3)")
+        # tr = table.findAll('tr')
 
-
+        # 授業計画
+        elements_theme = table.select("tr > td:nth-of-type(3)")
+        theme = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_theme]
+        # 時間外学習の内容
+        elements_homework = table.select("tr > td:nth-of-type(4)")
+        homework = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_homework]
 
     def export_json(self):
         """Summary line.
