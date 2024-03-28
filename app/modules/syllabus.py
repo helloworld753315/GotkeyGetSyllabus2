@@ -71,7 +71,7 @@ class Syllabus:
         with open(export_path, 'w') as json_file:
             json.dump(page.get_text("dict")["blocks"], json_file, indent=4, ensure_ascii=False)
 
-    def load(self):
+    def import_pdf(self):
         pages = fitz.open(self.import_path)
         number_of_pages = pages.page_count
 
@@ -113,7 +113,7 @@ class Syllabus:
         シラバスをjsonファイルとして出力する
         
         """
-        syllabus_list = self.load()
+        syllabus_list = self.import_pdf()
 
         with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
