@@ -129,7 +129,7 @@ class Syllabus:
                 shutil.copyfileobj(res.raw, fp)
         else:
             print(f'{save_path} exists.')
-
+    
     def get_page(self, url):
         res = requests.get(url)
         if not res.ok:
@@ -163,6 +163,24 @@ class Syllabus:
 
         return href_values
 
+    def get_data_by_regex_match(self, key):
+        """／に囲まれた英単語からkeyを取ってくる。
+
+        Args:
+            key (str): key
+
+        Returns:
+            str: ／に囲まれた英単語からkeyを返す。マッチしなかった場合空白文字を返す。
+        """
+        pattern = re.compile(r'／([A-Za-z\s]+)')
+        match = pattern.search(key)
+        if match:
+            # マッチした部分を取得し、改行コードや空白を除去
+            result = match.group(1).replace('\n', '').strip()
+            return result
+        else:
+            return ""
+
     def scraping(self):
         url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
         save_path = '.cache/8002_0110320001_ja_JP.html'
@@ -181,7 +199,7 @@ class Syllabus:
         keys = basic_information.findAll('th', class_='syllabus-prin')
         values = basic_information.findAll('td', class_='syllabus-break-word')
         if len(keys) == len(values):
-            basic_information_dict = [{key.text: value.text} for key, value in zip(keys, values)]
+            basic_information_dict = [{self.get_data_by_regex_match(key.text): value.text} for key, value in zip(keys, values)]
         else:
             basic_information_dict = []
 
