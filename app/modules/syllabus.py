@@ -3,6 +3,8 @@ from pprint import pprint
 import json
 import csv
 import re
+import requests
+from bs4 import BeautifulSoup
 
 class Syllabus:
     def __init__(self, import_path, export_path, text_bbox_setting):
@@ -106,7 +108,30 @@ class Syllabus:
         print(f'取得成功したシラバスの数: {len(syllabus_list)}')
 
         return syllabus_list
+
+    def get_page(self, url):
+        res = requests.get(url)
+        if not res.ok:
+            return f"Failure. status: {res.status_code}, reason: {res.reason}"
+        else:
+            html = res.content
+            return html
     
+    def scraping(self):
+        html = self.get_page(url='https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html')
+        soup = BeautifulSoup(html, 'html.parser')
+        tables = soup.find_all('table', class_='syllabus-normal')
+        table = tables[0]
+        print
+        keys = table.findAll('th', class_='syllabus-prin')
+        values = table.findAll('td', class_='syllabus-break-word')
+
+        for (k,v) in zip(keys, values):
+            print(f'{k.text},  {v.text}')
+        print(f'集計 key: {len(keys)}, values: {len(values)}')
+
+
+
     def export_json(self):
         """Summary line.
         

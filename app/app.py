@@ -20,14 +20,17 @@ def main():
         skip_rows=timetable_config["skip_rows"],
         use_cols=timetable_config["use_cols"]
     )
-    timetable.export_json()
+    # timetable.export_json()
 
     start = time.time()
+
     syllabus = Syllabus(
         import_path=syllabus_config["import_path"],
         export_path=syllabus_config["export_path"],
         text_bbox_setting = syllabus_config["text_bbox_setting"]
     )
+    syllabus.scraping()
+
     end = time.time()
     time_diff = end - start
     print(f'run_time: {time_diff} s')
