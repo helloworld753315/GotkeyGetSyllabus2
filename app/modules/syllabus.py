@@ -77,7 +77,7 @@ class Syllabus:
         with open(export_path, 'w') as json_file:
             json.dump(page.get_text("dict")["blocks"], json_file, indent=4, ensure_ascii=False)
 
-    def import_pdf(self):
+    def extract_from_pdf(self):
         pages = fitz.open(self.import_path)
         number_of_pages = pages.page_count
 
@@ -113,7 +113,15 @@ class Syllabus:
 
         return syllabus_list
 
-    def download_to_file(self, url, save_path):
+    def download_to_html(self, url, save_path):
+        """／がついた英単語の文字列を取ってくる。
+
+        Args:
+            text (str): キーになる文字列
+
+        Returns:
+            str: ／がついた英単語の文字列を返す。マッチしなかった場合空白文字を返す。
+        """
         file_path_obj = Path(save_path)
 
         if not file_path_obj.parent.exists():
@@ -129,14 +137,6 @@ class Syllabus:
                 shutil.copyfileobj(res.raw, fp)
         else:
             print(f'{save_path} exists.')
-    
-    def get_page(self, url):
-        res = requests.get(url)
-        if not res.ok:
-            return f"Failure. status: {res.status_code}, reason: {res.reason}"
-        else:
-            html = res.content
-            return html
         
     def get_urls_by_group(self):
         """科目群のページからシラバスのURLを取得する。
@@ -182,6 +182,14 @@ class Syllabus:
             return ""
     
     def to_camel_case(text):
+        """半角スペースが含まれたテキストをキャメルケースに変換して返す。
+
+        Args:
+            text (str): キャメルケースに変換したいテキスト
+
+        Returns:
+            str: キャメルケースに変換したテキストを返す
+        """
         words = text.split()
         camel_case_text = words[0].lower() + ''.join(word.capitalize() for word in words[1:])
         
@@ -201,12 +209,26 @@ class Syllabus:
         key = key.replace('*', '')
 
         return key
+    
+    def create_dict_from_pairs(self, keys, values):
+        """受け取ったkeyとvalueをペアにして辞書型で返す。
 
-    def scraping(self):
-        syllabus_list = []
-        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
-        save_path = '.cache/8002_0110320001_ja_JP.html'
-        self.download_to_file(url, save_path)
+        Args:
+            keys (list): キーのリスト。
+            values (list): バリューのリスト。
+
+        Returns:
+            dict: キーとバリューをペアにして辞書で返す。要素数が一致しなかった場合、空のリストを返す。
+        """
+        if len(keys) == len(values):
+            key_value_pairs = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
+        else:
+            key_value_pairs = {}
+
+        return key_value_pairs
+
+    def extract_from_web(self, url, save_path):
+        self.download_to_html(url, save_path)
 
         with open(save_path , encoding='utf-8') as f:
             html = f.read()
@@ -221,22 +243,12 @@ class Syllabus:
         # 基本情報の取得
         keys = basic_information.findAll('th', class_='syllabus-prin')
         values = basic_information.findAll('td', class_='syllabus-break-word')
-        if len(keys) == len(values):
-            # basic_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
-            basic_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
-        else:
-            basic_information_dict = {}
+        basic_information_dict = self.create_dict_from_pairs(keys, values)
 
         # 担当教員情報の取得
         keys = instructor_information.findAll('th', class_='syllabus-prin')
         values = instructor_information.findAll('td', class_='syllabus-top-info')
-        if len(keys) == len(values):
-            # instructor_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
-            instructor_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
-        else:
-            instructor_information_dict = {}
-
-        # print(f'集計 key: {len(keys)}, values: {len(values)}')
+        instructor_information_dict = self.create_dict_from_pairs(keys, values)
 
         # 詳細情報の取得
         keys = detailed_information.findAll('th', class_='syllabus-prin')
@@ -244,16 +256,7 @@ class Syllabus:
         filtered_keys = [keys[i] for i in index]
         values = detailed_information.findAll('td', class_='syllabus-break-word')
         filtered_values = [values[i] for i in index]
-
-        # for k in filtered_keys:
-        #     print(f'keys: {k.text}')
-        if len(filtered_keys) == len(filtered_values):
-            # detailed_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(filtered_keys, filtered_values)]
-            detailed_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(filtered_keys, filtered_values)}
-        else:
-            detailed_information_dict = {}
-
-        # print(f'keys: {len(keys)}, filterd_keys: {len(filtered_keys)}, values: {len(values)}, filterd_values: {len(filtered_values)}')
+        detailed_information_dict = self.create_dict_from_pairs(filtered_keys, filtered_values)
 
         # 授業計画
         elements_theme = class_schedule_details.select("tr > td:nth-of-type(3)")
@@ -266,7 +269,6 @@ class Syllabus:
         syllabus_dict['theme'] = theme
         syllabus_dict['homework'] = homework
 
-
         return syllabus_dict
 
     def export_json(self):
@@ -275,7 +277,9 @@ class Syllabus:
         シラバスをjsonファイルとして出力する
         
         """
-        syllabus_list = self.scraping()
+        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
+        save_path = '.cache/8002_0110320001_ja_JP.html'
+        syllabus_list = self.extract_from_web(url, save_path)
 
         with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
