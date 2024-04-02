@@ -163,23 +163,44 @@ class Syllabus:
 
         return href_values
 
-    def get_data_by_regex_match(self, key):
-        """／に囲まれた英単語からkeyを取ってくる。
+    def get_data_by_regex_match(text):
+        """／がついた英単語の文字列を取ってくる。
 
         Args:
-            key (str): key
+            text (str): キーになる文字列
 
         Returns:
-            str: ／に囲まれた英単語からkeyを返す。マッチしなかった場合空白文字を返す。
+            str: ／がついた英単語の文字列を返す。マッチしなかった場合空白文字を返す。
         """
         pattern = re.compile(r'／([\*A-Za-z\s]*[A-Za-z][\*A-Za-z\s]*)')
-        match = pattern.search(key)
+        match = pattern.search(text)
         if match:
             # マッチした部分を取得し、改行コードや空白を除去
             result = match.group(1).replace('\n', '').strip()
             return result
         else:
             return ""
+    
+    def to_camel_case(text):
+        words = text.split()
+        camel_case_text = words[0].lower() + ''.join(word.capitalize() for word in words[1:])
+        
+        return camel_case_text
+    
+    def get_key_col_text(self, text):
+        """表の列に含まれるテキストから英単語の部分を取得・キャメルケースにしてkeyとして返す。
+
+        Args:
+            text (str): 表の列部分のテキスト。
+
+        Returns:
+            str: キャメルケースでテキストを返す
+        """
+        key = Syllabus.get_data_by_regex_match(text)
+        key = Syllabus.to_camel_case(key)
+        key = key.replace('*', '')
+
+        return key
 
     def scraping(self):
         syllabus_list = []
@@ -202,7 +223,7 @@ class Syllabus:
         values = basic_information.findAll('td', class_='syllabus-break-word')
         if len(keys) == len(values):
             # basic_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
-            basic_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
+            basic_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
         else:
             basic_information_dict = {}
 
@@ -211,7 +232,7 @@ class Syllabus:
         values = instructor_information.findAll('td', class_='syllabus-top-info')
         if len(keys) == len(values):
             # instructor_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(keys, values)]
-            instructor_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
+            instructor_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
         else:
             instructor_information_dict = {}
 
@@ -228,7 +249,7 @@ class Syllabus:
         #     print(f'keys: {k.text}')
         if len(filtered_keys) == len(filtered_values):
             # detailed_information_dict = [{self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n")} for key, value in zip(filtered_keys, filtered_values)]
-            detailed_information_dict = {self.get_data_by_regex_match(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(filtered_keys, filtered_values)}
+            detailed_information_dict = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(filtered_keys, filtered_values)}
         else:
             detailed_information_dict = {}
 
