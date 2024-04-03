@@ -5,6 +5,7 @@ import json
 import csv
 import re
 import time, random
+from tqdm import tqdm
 import requests, shutil
 from pathlib import Path
 import urllib.parse
@@ -131,7 +132,9 @@ class Syllabus:
                 res.raw.decode_content = True
                 shutil.copyfileobj(res.raw, fp)
         else:
-            print(f'{save_path} exists.')
+            pass
+            # tqdm.write(f'{save_path} exists.')
+
         return save_path
         
     def get_urls_by_group(self, url):
@@ -273,10 +276,9 @@ class Syllabus:
         return syllabus_dict
 
     def get_syllabus_by_group(self):
-        for url in self.urls:
-            print(f'url: {url}')
+        for url in tqdm(self.urls):
             syllabus_urls = self.get_urls_by_group(url)
-            for syllabus_url in syllabus_urls:
+            for syllabus_url in tqdm(syllabus_urls, total=len(syllabus_urls)):
                 self.extract_from_web(syllabus_url)
 
 
