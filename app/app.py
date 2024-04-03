@@ -26,11 +26,13 @@ def main():
 
     syllabus = Syllabus(
         url=syllabus_config["url"],
+        urls=syllabus_config["urls"],
         import_path=syllabus_config["import_path"],
         export_path=syllabus_config["export_path"],
         text_bbox_setting = syllabus_config["text_bbox_setting"]
     )
-    syllabus.scraping()
+    syllabus.get_syllabus_by_group()
+    # syllabus.export_json()
 
     end = time.time()
     time_diff = end - start

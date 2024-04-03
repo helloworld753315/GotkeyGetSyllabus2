@@ -4,14 +4,16 @@ from pprint import pprint
 import json
 import csv
 import re
+import time, random
 import requests, shutil
 from pathlib import Path
 import urllib.parse
 from bs4 import BeautifulSoup
 
 class Syllabus:
-    def __init__(self, url, import_path, export_path, text_bbox_setting):
+    def __init__(self, url, urls, import_path, export_path, text_bbox_setting):
         self.url = url
+        self.urls = urls
         self.import_path = import_path
         self.export_path = export_path
         self.text_bbox_setting = text_bbox_setting
@@ -114,14 +116,6 @@ class Syllabus:
         return syllabus_list
 
     def download_to_html(self, url, save_path):
-        """／がついた英単語の文字列を取ってくる。
-
-        Args:
-            text (str): キーになる文字列
-
-        Returns:
-            str: ／がついた英単語の文字列を返す。マッチしなかった場合空白文字を返す。
-        """
         file_path_obj = Path(save_path)
 
         if not file_path_obj.parent.exists():
@@ -130,6 +124,7 @@ class Syllabus:
         if not file_path_obj.exists():
             file_path_obj.touch(exist_ok=True)
             res = requests.get(url, stream=True)
+            time.sleep(random.uniform(1,3))
             if res.status_code != 200:
                 raise IOError('Could not download:', url)
             with open(save_path, 'wb') as fp:
@@ -137,31 +132,32 @@ class Syllabus:
                 shutil.copyfileobj(res.raw, fp)
         else:
             print(f'{save_path} exists.')
+        return save_path
         
-    def get_urls_by_group(self):
+    def get_urls_by_group(self, url):
         """科目群のページからシラバスのURLを取得する。
 
         Returns:
             list: シラバスのURL一覧
         """
         # URLをデコード
-        url = urllib.parse.unquote(self.url)
+        url = urllib.parse.unquote(url)
 
         split_url = url.split('/')
         save_path = f".cache/{'/'.join(split_url[-3:])}"
         parent_path_from_url = f"{'/'.join(split_url[:-1])}"
 
-        self.download_to_file(url, save_path)
+        self.download_to_html(url, save_path)
 
         with open(save_path , encoding='utf-8') as f:
             html = f.read()
         soup = BeautifulSoup(html, 'html.parser')
         table = soup.find('table', class_='normal')
         course_urls = table.find_all('a')
-        href_values = [f"{parent_path_from_url}/{url.get('href')}" for url in course_urls]
-        print(f'取得したURL数: {len(href_values)}')
+        urls = [f"{parent_path_from_url}/{url.get('href')}" for url in course_urls]
+        print(f'取得したURL数: {len(urls)}')
 
-        return href_values
+        return urls
 
     def get_data_by_regex_match(text):
         """／がついた英単語の文字列を取ってくる。
@@ -227,7 +223,12 @@ class Syllabus:
 
         return key_value_pairs
 
-    def extract_from_web(self, url, save_path):
+    def extract_from_web(self, url):
+        # URLをデコード
+        url = urllib.parse.unquote(url)
+        split_url = url.split('/')
+        save_path = f".cache/{'/'.join(split_url[-4:])}"
+
         self.download_to_html(url, save_path)
 
         with open(save_path , encoding='utf-8') as f:
@@ -271,6 +272,14 @@ class Syllabus:
 
         return syllabus_dict
 
+    def get_syllabus_by_group(self):
+        for url in self.urls:
+            print(f'url: {url}')
+            syllabus_urls = self.get_urls_by_group(url)
+            for syllabus_url in syllabus_urls:
+                self.extract_from_web(syllabus_url)
+
+
     def export_json(self):
         """Summary line.
         
@@ -279,7 +288,7 @@ class Syllabus:
         """
         url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
         save_path = '.cache/8002_0110320001_ja_JP.html'
-        syllabus_list = self.extract_from_web(url, save_path)
+        syllabus_list = self.extract_from_web(url)
 
         with open(self.export_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
