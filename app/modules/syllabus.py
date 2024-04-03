@@ -158,7 +158,7 @@ class Syllabus:
         table = soup.find('table', class_='normal')
         course_urls = table.find_all('a')
         urls = [f"{parent_path_from_url}/{url.get('href')}" for url in course_urls]
-        print(f'取得したURL数: {len(urls)}')
+        tqdm.write(f'取得したURL数: {len(urls)}')
 
         return urls
 
