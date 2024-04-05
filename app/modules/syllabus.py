@@ -247,6 +247,7 @@ class Syllabus:
         return key_value_pairs
 
     def extract_from_web(self, url):
+        syllabus_dict = {}
         # URLをデコード
         url = urllib.parse.unquote(url)
         split_url = url.split('/')
@@ -270,9 +271,13 @@ class Syllabus:
         basic_information_dict = self.create_dict_from_pairs(keys, values)
 
         # 担当教員情報の取得
-        keys = instructor_information.findAll('th', class_='syllabus-prin')
-        values = instructor_information.findAll('td', class_='syllabus-top-info')
-        instructor_information_dict = self.create_dict_from_pairs(keys, values)
+        instructor_information_body = instructor_information.find('tbody')
+        ## 教員名をリストで取得
+        instructor_el = instructor_information_body.select("tr > td:nth-of-type(1)")
+        instructor = [Syllabus.clean_text(el.text) for el in instructor_el]
+        ## 教員所属名をリストで取得
+        affiliation_el = instructor_information_body.select("tr > td:nth-of-type(2)")
+        affiliation= [Syllabus.get_japanese_only(el.text) for el in affiliation_el]
 
         # 詳細情報の取得
         keys = detailed_information.findAll('th', class_='syllabus-prin')
@@ -283,15 +288,18 @@ class Syllabus:
         detailed_information_dict = self.create_dict_from_pairs(filtered_keys, filtered_values)
 
         # 授業計画
-        elements_theme = class_schedule_details.select("tr > td:nth-of-type(3)")
-        theme = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_theme]
+        theme_el = class_schedule_details.select("tr > td:nth-of-type(3)")
+        theme = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in theme_el]
         # 時間外学習の内容
         elements_homework = class_schedule_details.select("tr > td:nth-of-type(4)")
         homework = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_homework]
 
         syllabus_dict = {**basic_information_dict, **instructor_information_dict, **detailed_information_dict}
+        syllabus_dict['instructor'] = instructor
+        syllabus_dict['affiliation'] = affiliation
         syllabus_dict['theme'] = theme
         syllabus_dict['homework'] = homework
+
 
         return syllabus_dict
 
@@ -308,8 +316,10 @@ class Syllabus:
         シラバスをjsonファイルとして出力する
         
         """
-        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
-        save_path = '.cache/8002_0110320001_ja_JP.html'
+        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
+        # save_path = '.cache/8002_0110320001_ja_JP.html'
+        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E3%82%AD%E3%83%A3%E3%83%AA%E3%82%A2%E7%A7%91%E7%9B%AE%E7%BE%A4/8015/8015_01V0110001_ja_JP.html'
+        save_path = '.cache/8015_01V0110001_ja_JP.html'
         syllabus_list = self.extract_from_web(url)
 
         with open(self.export_path, 'w') as json_file:
