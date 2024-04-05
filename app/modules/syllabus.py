@@ -169,6 +169,18 @@ class Syllabus:
         japanese_text = ''.join(re.findall(pattern, text))
 
         return japanese_text
+    
+    def clean_text(text):
+        """テキストから空白文字と改行を消して整形する。
+
+        Args:
+            text (str): 空白文字と改行を消したいテキスト。
+
+        Returns:
+            str: 空白文字と改行を消したテキストを返す。
+        """
+        cleaned_text = re.sub(r'\s+', '', text)
+        return cleaned_text
 
     def get_data_by_regex_match(text):
         """／がついた英単語の文字列を取ってくる。
