@@ -240,7 +240,7 @@ class Syllabus:
             dict: キーとバリューをペアにして辞書で返す。要素数が一致しなかった場合、空のリストを返す。
         """
         if len(keys) == len(values):
-            key_value_pairs = {self.get_key_col_text(key.text): Syllabus.replace_fullwidth_space(value.text, "\n") for key, value in zip(keys, values)}
+            key_value_pairs = {self.get_key_col_text(key.text): Syllabus.clean_text(value.text) for key, value in zip(keys, values)}
         else:
             key_value_pairs = {}
 
@@ -294,7 +294,7 @@ class Syllabus:
         elements_homework = class_schedule_details.select("tr > td:nth-of-type(4)")
         homework = [Syllabus.replace_fullwidth_space(el.text, "\n") for el in elements_homework]
 
-        syllabus_dict = {**basic_information_dict, **instructor_information_dict, **detailed_information_dict}
+        syllabus_dict = {**basic_information_dict, **detailed_information_dict}
         syllabus_dict['instructor'] = instructor
         syllabus_dict['affiliation'] = affiliation
         syllabus_dict['theme'] = theme
