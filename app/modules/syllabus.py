@@ -161,6 +161,14 @@ class Syllabus:
         tqdm.write(f'取得したURL数: {len(urls)}')
 
         return urls
+    
+    def get_japanese_only(text):
+        # 日本語テキスト（平仮名、片仮名、漢字）にマッチする正規表現パターン
+        pattern = r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+'
+        # 正規表現を使って日本語の部分を抜き出す
+        japanese_text = ''.join(re.findall(pattern, text))
+
+        return japanese_text
 
     def get_data_by_regex_match(text):
         """／がついた英単語の文字列を取ってくる。
