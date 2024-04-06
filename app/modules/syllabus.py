@@ -260,6 +260,15 @@ class Syllabus:
         return key_value_pairs
 
     def extract_from_web(self, url):
+        """Webページからシラバスを取得する。
+        
+        Args:
+            url (str): シラバスを取得するURL
+        
+        Returns:
+            dict: シラバスのデータを返す。
+        
+        """
         syllabus_dict = {}
         # URLをデコード
         url = urllib.parse.unquote(url)
@@ -344,6 +353,10 @@ class Syllabus:
         """Summary line.
         
         シラバスをjsonファイルとして出力する
+
+        Args:
+            syllabus_list (dict): シラバス
+            save_path (str): 保存先のパス
         
         """
         with open(save_path, 'w') as json_file:
