@@ -163,10 +163,17 @@ class Syllabus:
         return urls
     
     def get_japanese_only(text):
-        # 日本語テキスト（平仮名、片仮名、漢字）にマッチする正規表現パターン
-        pattern = r'[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]+'
-        # 正規表現を使って日本語の部分を抜き出す
-        japanese_text = ''.join(re.findall(pattern, text))
+        """受け取ったテキストから全角スラッシュの後ろに続いている英語を削除して日本語のみで返す。
+
+        Args:
+            text (str): 日本語部分のみ抜き出したいテキスト。
+
+        Returns:
+            str: 日本語部分のみ返す。
+        """
+        # 全角スラッシュの後ろに英語が続く部分を置換する正規表現
+        pattern = r'／[A-Za-z\s]+'
+        japanese_text = re.sub(pattern, '', text)
 
         return japanese_text
     
@@ -229,20 +236,27 @@ class Syllabus:
 
         return key
     
-    def create_dict_from_pairs(self, keys, values):
+    def create_dict_from_pairs(self, keys, values, include_en=[]):
         """受け取ったkeyとvalueをペアにして辞書型で返す。
 
         Args:
             keys (list): キーのリスト。
             values (list): バリューのリスト。
+            include_en(list): 英語も含めたい場合、そのキーを指定する。
 
         Returns:
             dict: キーとバリューをペアにして辞書で返す。要素数が一致しなかった場合、空のリストを返す。
         """
+        key_value_pairs = {}
         if len(keys) == len(values):
-            key_value_pairs = {self.get_key_col_text(key.text): Syllabus.clean_text(value.text) for key, value in zip(keys, values)}
-        else:
-            key_value_pairs = {}
+            # key_value_pairs = {self.get_key_col_text(key.text): Syllabus.clean_text(value.text) for key, value in zip(keys, values)}
+            for key, value in zip(keys, values):
+                processed_key = self.get_key_col_text(key.text)
+                processed_value = Syllabus.clean_text(value.text)
+                if not(processed_key in include_en):
+                    processed_value = Syllabus.get_japanese_only(processed_value)
+
+                key_value_pairs[processed_key] = processed_value
 
         return key_value_pairs
 
@@ -268,7 +282,7 @@ class Syllabus:
         # 基本情報の取得
         keys = basic_information.findAll('th', class_='syllabus-prin')
         values = basic_information.findAll('td', class_='syllabus-break-word')
-        basic_information_dict = self.create_dict_from_pairs(keys, values)
+        basic_information_dict = self.create_dict_from_pairs(keys, values, ['mainInstructor'])
 
         # 担当教員情報の取得
         instructor_information_body = instructor_information.find('tbody')
@@ -277,7 +291,7 @@ class Syllabus:
         instructor = [Syllabus.clean_text(el.text) for el in instructor_el]
         ## 教員所属名をリストで取得
         affiliation_el = instructor_information_body.select("tr > td:nth-of-type(2)")
-        affiliation= [Syllabus.get_japanese_only(el.text) for el in affiliation_el]
+        affiliation= [Syllabus.get_japanese_only(Syllabus.clean_text(el.text)) for el in affiliation_el]
 
         # 詳細情報の取得
         keys = detailed_information.findAll('th', class_='syllabus-prin')
@@ -285,7 +299,7 @@ class Syllabus:
         filtered_keys = [keys[i] for i in index]
         values = detailed_information.findAll('td', class_='syllabus-break-word')
         filtered_values = [values[i] for i in index]
-        detailed_information_dict = self.create_dict_from_pairs(filtered_keys, filtered_values)
+        detailed_information_dict = self.create_dict_from_pairs(filtered_keys, filtered_values, [])
 
         # 授業計画
         theme_el = class_schedule_details.select("tr > td:nth-of-type(3)")
