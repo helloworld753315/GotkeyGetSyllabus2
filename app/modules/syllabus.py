@@ -336,7 +336,6 @@ class Syllabus:
         for url in tqdm(self.urls):
             syllabus_urls = self.get_urls_by_group(url)
             for syllabus_url in tqdm(syllabus_urls, total=len(syllabus_urls)):
-                # save_path = 'tmp/out/test_2024_04_06.json'
                 save_path = f'tmp/out/{self.get_filename(syllabus_url)}.json'
                 syllabus = self.extract_from_web(syllabus_url)
                 self.export_json(syllabus, save_path)
@@ -347,9 +346,5 @@ class Syllabus:
         シラバスをjsonファイルとして出力する
         
         """
-        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E3%82%AD%E3%83%A3%E3%83%AA%E3%82%A2%E7%A7%91%E7%9B%AE%E7%BE%A4/8015/8015_01V0110001_ja_JP.html'
-        # save_path = '.cache/8015_01V0110001_ja_JP.html'
-        # syllabus_list = self.extract_from_web(url)
-
         with open(save_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)

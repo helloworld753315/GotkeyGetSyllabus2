@@ -55,7 +55,7 @@ class TimeTable:
         時間割をjsonファイルとして出力する
         
         """
-        timetable_list = self.import_pdf()
+        timetable_list = self.import_xlsx()
         with open(self.export_path, 'w') as json_file:
             json.dump(timetable_list, json_file, indent=4, ensure_ascii=False)
 
