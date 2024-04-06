@@ -12,8 +12,7 @@ import urllib.parse
 from bs4 import BeautifulSoup
 
 class Syllabus:
-    def __init__(self, url, urls, import_path, export_path, text_bbox_setting):
-        self.url = url
+    def __init__(self, urls, import_path, export_path, text_bbox_setting):
         self.urls = urls
         self.import_path = import_path
         self.export_path = export_path
