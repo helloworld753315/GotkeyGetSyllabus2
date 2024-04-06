@@ -4,3 +4,6 @@ pandas
 numpy
 openpyxl
 pyyaml
+requests
+beautifulsoup4
+tqdm

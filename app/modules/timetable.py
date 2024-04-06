@@ -25,7 +25,7 @@ class TimeTable:
 
         return ord(c) - ord('A')
     
-    def load(self):
+    def import_xlsx(self):
         """Summary line.
         
         エクセルの時間割を読み込む。
@@ -55,7 +55,7 @@ class TimeTable:
         時間割をjsonファイルとして出力する
         
         """
-        timetable_list = self.load()
+        timetable_list = self.import_xlsx()
         with open(self.export_path, 'w') as json_file:
             json.dump(timetable_list, json_file, indent=4, ensure_ascii=False)
 
