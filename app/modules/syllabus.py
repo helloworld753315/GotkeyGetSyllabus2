@@ -249,7 +249,6 @@ class Syllabus:
         """
         key_value_pairs = {}
         if len(keys) == len(values):
-            # key_value_pairs = {self.get_key_col_text(key.text): Syllabus.clean_text(value.text) for key, value in zip(keys, values)}
             for key, value in zip(keys, values):
                 processed_key = self.get_key_col_text(key.text)
                 processed_value = Syllabus.clean_text(value.text)
@@ -314,27 +313,43 @@ class Syllabus:
         syllabus_dict['theme'] = theme
         syllabus_dict['homework'] = homework
 
-
         return syllabus_dict
+    
+    def get_filename(self, url):
+        """URLから拡張子を除いたファイル名を取得
+
+        Args:
+            url (str): URL。
+
+        Returns:
+            str: URLから拡張子を除いたファイル名を返す。
+        """
+        split_url = url.split('/')
+        split_filename = split_url[-1].split('.')
+        filename = split_filename[0]
+
+        return filename
 
     def get_syllabus_by_group(self):
+        """URLから取得したシラバスを全て出力する。
+        """
         for url in tqdm(self.urls):
             syllabus_urls = self.get_urls_by_group(url)
             for syllabus_url in tqdm(syllabus_urls, total=len(syllabus_urls)):
-                self.extract_from_web(syllabus_url)
+                # save_path = 'tmp/out/test_2024_04_06.json'
+                save_path = f'tmp/out/{self.get_filename(syllabus_url)}.json'
+                syllabus = self.extract_from_web(syllabus_url)
+                self.export_json(syllabus, save_path)
 
-
-    def export_json(self):
+    def export_json(self, syllabus_list, save_path):
         """Summary line.
         
         シラバスをjsonファイルとして出力する
         
         """
-        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E4%BA%BA%E9%96%93%E6%96%87%E5%8C%96%E7%A7%91%E7%9B%AE%E7%BE%A4/8002/8002_0110320001_ja_JP.html'
-        # save_path = '.cache/8002_0110320001_ja_JP.html'
-        url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E3%82%AD%E3%83%A3%E3%83%AA%E3%82%A2%E7%A7%91%E7%9B%AE%E7%BE%A4/8015/8015_01V0110001_ja_JP.html'
-        save_path = '.cache/8015_01V0110001_ja_JP.html'
-        syllabus_list = self.extract_from_web(url)
+        # url = 'https://www2.okiu.ac.jp/syllabus/2024/syllabus_%E3%82%AD%E3%83%A3%E3%83%AA%E3%82%A2%E7%A7%91%E7%9B%AE%E7%BE%A4/8015/8015_01V0110001_ja_JP.html'
+        # save_path = '.cache/8015_01V0110001_ja_JP.html'
+        # syllabus_list = self.extract_from_web(url)
 
-        with open(self.export_path, 'w') as json_file:
+        with open(save_path, 'w') as json_file:
             json.dump(syllabus_list, json_file, indent=4, ensure_ascii=False)
